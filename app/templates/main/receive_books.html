@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}השאלת ספרים{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <h2 class="text-center mb-4">השאלת ספרים</h2>
+
+    {% if not student %}
+    <form method="POST" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="student_id" class="form-label">תעודת הזהות של התלמיד</label>
+<input type="text" class="form-control" id="student_id" name="student_id" pattern="\d{9}" maxlength="9" minlength="9" required title="יש להזין 9 ספרות">            </div>
+            <div class="col-md-3">
+                <label for="grade" class="form-label">שכבה</label>
+                <select class="form-select" id="grade" name="grade" required title="יש לבחור שכבה">
+                    <option value="" selected disabled>בחר שכבה</option>
+                    <option value='0'>א</option>
+                    <option value='1'>ב</option>
+                    <option value='2'>ג</option>
+                    <option value='3'>ד</option>
+                    <option value='4'>ה</option>
+                    <option value='5'>ו</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="class_num" class="form-label">מספר כיתה</label>
+                <select class="form-select" id="class_num" name="class_num" required title="יש לבחור מספר כיתה">
+                    <option value="" selected disabled>בחר מספר כיתה</option>
+                    <option value='1'>1</option>
+                    <option value='2'>2</option>
+                    <option value='3'>3</option>
+                    <option value='4'>4</option>
+                    <option value='5'>5</option>
+                    <option value='6'>6</option>
+                    <option value='7'>7</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">חפש תלמיד</button>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">פרטי תלמיד</h5>
+            <p class="card-text">
+                <strong>שם התלמיד:</strong> {{ student.name }}<br>
+                <strong>תעודת זהות:</strong> {{ student.id }}<br>
+                <strong>כיתה:</strong> {{student.grade_str}}
+            </p>
+
+            <form method="POST">
+                <label for="receiver_name">שם המקבל</label>
+                <input type="text" class="form-control mb-3" id="receiver_name" name="receiver_name" required oninput="validateReceiverName()">
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+                <input type="hidden" name="student_name" value="{{ student.name }}">
+                <input type="hidden" name="confirm" value="1">
+                <button type="submit" class="btn btn-success" id="confirmButton" disabled>אשר קבלת ספרים</button>
+                <a href="{{ url_for('main.receive_books') }}" class="btn btn-secondary">חזור</a>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const gradeSelect = document.getElementById('grade');
+    const classNumSelect = document.getElementById('class_num');
+
+    gradeSelect.addEventListener('change', function() {
+        classNumSelect.disabled = this.value === '0';
+    });
+});
+
+function validateReceiverName() {
+    const receiverInput = document.getElementById('receiver_name');
+    const confirmButton = document.getElementById('confirmButton');
+
+    // Split the input value into words
+    const words = receiverInput.value.trim().split(/\s+/);
+
+    // Check if there are at least 2 words
+    if (words.length < 2) {
+        confirmButton.d = true;
+        return;
+    }
+
+    // Check if each word has at least 2 letters
+    const isValid = words.every(word => word.length >= 2);
+
+    // Enable/disable button based on validation
+    confirmButton.disabled = !isValid;
+}
+</script>
+{% endblock %}

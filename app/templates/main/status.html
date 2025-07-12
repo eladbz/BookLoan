@@ -1,0 +1,124 @@
+
+{% extends "base.html" %}
+
+{% block title %}סטטוס חלוקת ספרים{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <h2 class="text-center mb-4">סטטוס חלוקת ספרים</h2>
+    <div class="table-container">
+        <table class="distributions-table" id="distributionsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">תאריך ▼</th>
+                    <th onclick="sortTable(1)">תעודת זהות ▼</th>
+                    <th onclick="sortTable(2)">שם תלמיד ▼</th>
+                    <th onclick="sortTable(3)">מקבל ▼</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dist in distributions %}
+                <tr>
+                    <td>{{ dist.date }}</td>
+                    <td>{{ dist.student_id }}</td>
+                    <td>{{ dist.student_name }}</td>
+                    <td>{{ dist.receiver }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.table-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.distributions-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.distributions-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: white;
+}
+
+.distributions-table th {
+    cursor: pointer;
+    user-select: none;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.distributions-table th:hover {
+    background-color: #e0e0e0;
+}
+
+/* Add shadow to the header when scrolling */
+.table-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sortTable(colIndex) {
+    const table = document.getElementById('distributionsTable');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = Array.from(tbody.getElementsByTagName('tr'));
+    const headers = table.getElementsByTagName('th');
+
+    // Toggle sort direction
+    const currentDirection = headers[colIndex].textContent.includes('▼') ? 'asc' : 'desc';
+
+    // Reset all headers
+    for (let header of headers) {
+        header.textContent = header.textContent.replace(/[▼▲]/, '▼');
+    }
+
+    // Update clicked header
+    headers[colIndex].textContent = headers[colIndex].textContent.replace(
+        '▼',
+        currentDirection === 'asc' ? '▲' : '▼'
+    );
+
+    // Sort the rows
+    rows.sort((a, b) => {
+        const aValue = a.cells[colIndex].textContent.trim();
+        const bValue = b.cells[colIndex].textContent.trim();
+
+        // Date comparison for the first column
+        if (colIndex === 0) {
+            const dateA = new Date(aValue);
+            const dateB = new Date(bValue);
+            return currentDirection === 'asc'
+                ? dateA - dateB
+                : dateB - dateA;
+        }
+
+        // Regular string comparison for other columns
+        return currentDirection === 'asc'
+            ? aValue.localeCompare(bValue, 'he')
+            : bValue.localeCompare(aValue, 'he');
+    });
+
+    // Reinsert sorted rows
+    rows.forEach(row => tbody.appendChild(row));
+}
+</script>
+{% endblock %}
