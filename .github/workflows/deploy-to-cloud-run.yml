@@ -1,9 +1,9 @@
 name: Deploy to Cloud Run
 
 on:
+  workflow_dispatch:  
   push:
     branches: [main]
-
 env:
   PROJECT_ID: book-loan-david-yalin
   REGION: us-central1
