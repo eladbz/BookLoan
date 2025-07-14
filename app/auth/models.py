@@ -13,12 +13,15 @@ class User(UserMixin):
 
     @staticmethod
     def get_user(username):
-        with open(Config.USERS_FILE, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row['username'] == username:
-                    return User(row['username'], row['password_hash'])
-        return None
+        try:
+            with open(Config.USERS_FILE, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row['username'] == username:
+                        return User(row['username'], row['password_hash'])
+            return None
+        except FileNotFoundError:
+            print('Users file not found - %s' % Config.USERS_FILE)
 
     @staticmethod
     def create_user(username, password):

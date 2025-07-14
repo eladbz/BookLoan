@@ -1,16 +1,13 @@
 from datetime import datetime
+
 import pandas as pd
-import os
-from flask import current_app
 
+from config import Config
 
-def get_path_to_file(filename):
-    return os.path.join(current_app.root_path, filename)
 
 def get_student_data(student_id: int, grade: int, class_num: int):
     try:
-        file = get_path_to_file('students.csv')
-        df = pd.read_csv(file)
+        df = pd.read_csv(Config.STUDENTS_FILE)
         # Split the 'שכבה' column into grade and class_num
         df[['grade', 'class_num']] = df['שכבה'].str.split(expand=True)
         if grade == 0:
@@ -42,8 +39,7 @@ def get_student_data(student_id: int, grade: int, class_num: int):
 
 def save_distribution(student_id, student_name, receiver):
     try:
-        distributions = get_path_to_file('distributions.csv')
-        df = pd.read_csv(distributions)
+        df = pd.read_csv(Config.DISTRIBUTIONS_FILE)
 
         new_distribution = {
             'תעודת זהות': student_id,
@@ -53,7 +49,7 @@ def save_distribution(student_id, student_name, receiver):
         }
 
         df = pd.concat([df, pd.DataFrame([new_distribution])], ignore_index=True)
-        df.to_csv(distributions, index=False)
+        df.to_csv(Config.DISTRIBUTIONS_FILE, index=False)
         return True
 
     except Exception as e:
@@ -62,8 +58,7 @@ def save_distribution(student_id, student_name, receiver):
 
 def get_all_distributions():
     try:
-        distributions = get_path_to_file('distributions.csv')
-        df = pd.read_csv(distributions)
+        df = pd.read_csv(Config.DISTRIBUTIONS_FILE)
         column_mapping = {
             'תעודת זהות': 'student_id',
             'שם תלמיד': 'student_name',
@@ -81,8 +76,7 @@ def get_all_distributions():
 
 def check_distribution_status(student_id: int) -> (bool, str):
     try:
-        distributions = get_path_to_file('distributions.csv')
-        df = pd.read_csv(distributions)
+        df = pd.read_csv(Config.DISTRIBUTIONS_FILE)
         # Use Hebrew column names directly
         student = df[df['תעודת זהות'] == student_id]
         if student.empty:
@@ -91,6 +85,19 @@ def check_distribution_status(student_id: int) -> (bool, str):
 
     except FileNotFoundError:
         return []
+
+def reset_distributions():
+    try:
+        df = pd.read_csv(Config.DISTRIBUTIONS_FILE)
+        # Read the CSV file
+        # Keep only the first row
+        df = df.head(0)
+
+        # Overwrite the file with the first row
+        df.to_csv(Config.DISTRIBUTIONS_FILE, index=False)
+        return True
+    except Exception as e:
+        print(f"Error processing file: {e}")
 
 def grade_to_char(grade: int) -> str:
     grade_map = {

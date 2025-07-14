@@ -2,7 +2,9 @@ from flask import render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
 from app.main import bp
 from app.strings import not_found_str, received_str, confirmation_str
-from app.utils import get_student_data, save_distribution, get_all_distributions, check_distribution_status
+from app.utils import get_student_data, save_distribution, get_all_distributions, check_distribution_status, \
+    reset_distributions
+
 
 @bp.route('/')
 @bp.route('/index')
@@ -44,3 +46,14 @@ def receive_books():
 def status():
     distributions = get_all_distributions()
     return render_template('main/status.html', distributions=distributions)
+
+@bp.route('/reset')
+@login_required
+def reset():
+    """Reset the distributions data."""
+    if current_user.id != 'elad':
+        flash("You do not have permission to reset the distributions.")
+        return redirect(url_for('main.status'))
+    reset_distributions()
+    flash("File reset successfully")
+    return redirect(url_for('main.status'))
