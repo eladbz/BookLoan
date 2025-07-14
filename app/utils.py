@@ -5,12 +5,12 @@ from flask import current_app
 
 
 def get_path_to_file(filename):
-    return os.path.join(current_app.root_path, '..', 'data', filename)
+    return os.path.join(current_app.root_path, filename)
 
 def get_student_data(student_id: int, grade: int, class_num: int):
     try:
-        file = get_path_to_file('students.xlsx')
-        df = pd.read_excel(file)
+        file = get_path_to_file('students.csv')
+        df = pd.read_csv(file)
         # Split the 'שכבה' column into grade and class_num
         df[['grade', 'class_num']] = df['שכבה'].str.split(expand=True)
         if grade == 0:
