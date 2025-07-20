@@ -21,7 +21,7 @@ def receive_books():
         if not 'confirm' in request.form:
             #Submit the form to get student data
             grade = int(request.form['grade'] )
-            class_num = int(request.form['class_num'])
+            class_num = int(request.form['class_num'] if grade != 0 else 0)
             student = get_student_data(student_id, grade, class_num)
             if not student:
                 flash(not_found_str % student_id)
