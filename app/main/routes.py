@@ -10,6 +10,7 @@ import io
 import csv
 import os
 from tempfile import NamedTemporaryFile
+from pathlib import Path
 
 
 @bp.route('/')
@@ -104,15 +105,15 @@ def upload_csv():
         }), 400
 
     row_count = sum(1 for _ in reader)
+    dest = Path(Config.DISTRIBUTIONS_FILE)
+    # Create temp file in the **same directory** as the destination
+    with NamedTemporaryFile('w',dir=dest.parent, encoding='utf-8', newline='',  delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+        tmp.write(text)
+        tmp.flush()
+        os.fsync(tmp.fileno())  # optional: durability
 
-    tmp_file = NamedTemporaryFile('w', encoding='utf-8', newline='', delete=False)
-    try:
-        tmp_file.write(text)
-        tmp_file.flush()
-        os.fsync(tmp_file.fileno())
-        tmp_name = tmp_file.name
-    finally:
-        tmp_file.close()
-    os.replace(tmp_name, Config.DISTRIBUTIONS_FILE)
+    # Atomic swap within the same filesystem
+    os.replace(tmp_path, dest)
 
     return jsonify({"message": "File rewrite successfully", "rows": row_count})
